@@ -1,0 +1,61 @@
+* {
+	margin: 0;
+	padding: 0;
+}
+body {
+	background: #242424;
+}
+h1 {
+	color: yellowgreen;
+}
+.text1 {
+	color: blueviolet;
+}
+.text {
+	color: brown;
+	/* background-color: cadetblue; */
+	font-family: "Noto Sans JP", sans-serif;
+	font-size: 25px;
+	line-height: 25px;
+}
+
+#sec {
+	background-color: cadetblue;
+    text-align: center;
+}
+
+.image {
+	width: 250px;
+	height: 150px;
+}
+
+.parent {
+	width: 100px;
+	height: 100px;
+	background-color: chocolate;
+	padding: 10px;
+	margin: auto;
+    background-image:url('https://i2.wp.com/techbeasts.com/wp-content/uploads/2016/01/green_mountain_nature_wallpaper_hd.jpg');
+    /* background-size: contain; */
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+.child {
+	width: 70px;
+	height: 70px;
+	background-color: rgb(30, 210, 99);
+	margin: 15px;
+}
+.child2{
+    width: 40px;
+	height: 40px;
+	background-color: rgb(250, 38, 169);
+}
+.x {
+	font-size: 15px;
+}
+
+.x {
+	font-size: 17px;
+}
