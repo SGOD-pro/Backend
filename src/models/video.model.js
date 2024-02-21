@@ -12,15 +12,28 @@ const videoSchema = new Schema({
     owner: {
         type: Schema.Types.ObjectId,
         require: true,
+        ref:'user',
     },
     title: {
-        type: Schema.Types.ObjectId,
+        type: String,
         require: true,
     },
     description: {
-        type: Schema.Types.ObjectId,
+        type: String,
         
     },
+    duration:{
+        type:Number,
+        require:true
+    },
+    views:{
+        type:Number,
+        default:0
+    },
+    isPublic:{
+        type:Boolean,
+        default:true
+    }
 }, { timestamps: true }
 )
 
