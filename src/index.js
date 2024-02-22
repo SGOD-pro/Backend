@@ -1,10 +1,8 @@
-import express from "express";
 //import mongoose from "mongoose";
 import ConnectDB from "./db/index.js";
-const app = express();
 import dotenv from 'dotenv'
-dotenv.config({path:'./env'})
-
+dotenv.config({ path: './env' })
+import { app } from "./app.js";
 
 //1st approch
 // ; (async () => {
@@ -25,3 +23,6 @@ dotenv.config({path:'./env'})
 
 //2nd approch
 ConnectDB()
+.then(app.listen(3001, function () {
+    console.log(`Servers are running at 3001`);
+})).catch((err) => { console.log('MongoDB connectin faield', err); })

@@ -1,5 +1,7 @@
-const asyncHandeler = (handelterFunc) => (req, res, next) => {
-    Promise.resolve(handelterFunc(req, res, next)).catch(err => next(err))
+const asyncHandeler = (handelterFunc) => {
+    return (req, res, next) => {
+        Promise.resolve(handelterFunc(req, res, next)).catch(err => next(err))
+    }
 }
 
 
