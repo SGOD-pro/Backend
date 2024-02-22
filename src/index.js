@@ -22,6 +22,6 @@ dotenv.config({path:'./env'})
 //     }
 // })()
 
-//2nd approch
 
+//2nd approch
 ConnectDB()

@@ -54,7 +54,6 @@ const userSchema = new Schema({
 userSchema.pre('save', async function (next) {
     if (!this.isModified('password')) return next(); //checking if the password is modified or not, then perform encryption operation
 
-
     this.password = bcrypt(this.password, 10);
     next()
 })//pre is a hook, save is a event-> run this hook before saving data, we always use functions not arrow functions because in arrow function there is no reference(this) thats why we use normal function
