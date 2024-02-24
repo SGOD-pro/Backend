@@ -42,9 +42,7 @@ const userSchema = new Schema({
     refreshToken: {
         type: String
     },
-    refreshToken: {
-        type: String
-    }
+    
 },
     { timestamps: true } //For this we automaticaly get 2 extra fields createAt,updatedAt....
 
