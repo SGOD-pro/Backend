@@ -2,7 +2,7 @@ import mongoose, { Schema } from "mongoose";
 import jwt from "jsonwebtoken";
 import bcrypt from 'bcrypt'
 const userSchema = new Schema({
-    usename: {
+    username: {
         type: String,
         required: true,
         index: true, //imporve query operations
@@ -54,7 +54,7 @@ const userSchema = new Schema({
 userSchema.pre('save', async function (next) {
     if (!this.isModified('password')) return next(); //checking if the password is modified or not, then perform encryption operation
 
-    this.password = await bcrypt(this.password, 10);
+    this.password = await bcrypt.hash(this.password, 10);
     next()
 })//pre is a hook, save is a event-> run this hook before saving data, we always use functions not arrow functions because in arrow function there is no reference(this) thats why we use normal function
 
@@ -66,7 +66,7 @@ userSchema.methods.isPasswordCorrect = async function (password) { //adding cust
 
 userSchema.methods.generateAccessToken = function () {
     return jwt.sign(
-        { _id: _id, email: this.email, usename: this.username },
+        { _id: _id, email: this.email, username: this.username },
         process.env.ACCESS_TOKEN_SECRET,
         { expiresIn: process.env.ACCESS_TOKEN_EXP }
     )

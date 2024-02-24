@@ -1,7 +1,7 @@
 //import mongoose from "mongoose";
 import ConnectDB from "./db/index.js";
 import dotenv from 'dotenv'
-dotenv.config({ path: './env' })
+dotenv.config({ path: './.env' })
 
 import { app } from "./app.js";
 
@@ -25,6 +25,6 @@ import { app } from "./app.js";
 
 //2nd approch
 ConnectDB()
-.then(app.listen(3001, function () {
-    console.log(`Servers are running at 3001`);
-})).catch((err) => { console.log('MongoDB connectin faield', err); })
+    .then(app.listen(3001, function () {
+        console.log(`Servers are running at 3001`);
+    })).catch((err) => { console.log('MongoDB connectin faield', err); })

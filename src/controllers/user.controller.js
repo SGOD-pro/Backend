@@ -9,14 +9,14 @@ const registerUser = asyncHandeler(async (req, res) => {
     // })
 
     const { fullname, username, email, password } = req.body
-
+    console.log(req.body);
     [fullname, username, email, password].forEach(element => {
-        if (element === '' || element) {
-            throw new apiErrors(400, `${element} is empty..`)
+        if (element === '' || !element) {
+            throw new apiErrors(400, `Something is empty..`)
         }
     });
 
-    const exitsusre = User.findOne({
+    const exitsusre = await User.findOne({
         $or: [{ username, email }]
     })
     if (exitsusre) {
@@ -26,14 +26,19 @@ const registerUser = asyncHandeler(async (req, res) => {
 
     //Upload files functionality
     const avatarPath = req.files?.avatar[0]?.path
-    const coverImagePath = req.files?.coverImage[0]?.path
+    let coverImagePath;
+
+    if (Array.isArray(req.files.coverImage) && req.files.coverImage.length > 0) {
+        coverImagePath = req.files.coverImage[0].path
+    }
     if (!avatarPath) {
-        throw apiErrors(400, 'Avatar is required')
+        throw new apiErrors(400, 'AvatarPath is required')
     }
     const avatar = await cloudinaryUpload(avatarPath)
     const coverImage = await cloudinaryUpload(coverImagePath)
+    console.log(avatar);
     if (!avatar) {
-        throw apiErrors(400, 'Avatar is required')
+        throw new apiErrors(400, 'Avatar is required')
     }
 
     const createdUser = await User.create({
@@ -47,11 +52,9 @@ const registerUser = asyncHandeler(async (req, res) => {
 
     const user = await User.findById(createdUser._id).select("-password -refreshToken")
     if (!user) {
-        apiErrors(500, "Some internal error occurs")
+        throw new apiErrors(500, "Some internal error occurs")
     }
-    res.send(200).json(
-        new apiResponce(201, user, 'User Registered Successfully')
-    )
+    res.status(201).json(new apiResponce(201, user, 'User Registered Successfully'));
 })
 
 export { registerUser }
