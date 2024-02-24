@@ -161,5 +161,23 @@ const regenerateToken = asyncHandeler(async (req, res) => {
     }
 })
 
+const changePassword = asyncHandeler(async (req, res) => {
+    const { oldPassword, newPassword } = req.body;
+    const user = await User.findById(req.user?._id);
+    if (!await user.isPasswordCorrect(oldPassword)) {
+        throw new apiErrors(400, "Old Password is incorrect.")
+    }
 
-export { registerUser, userLogin, logout,regenerateToken }
+    user.password = newPassword;
+    await user.save({ validationBeforeSave: false })
+
+    res.status(200).json(new apiResponce(200, {}, "Password Updated."))
+})
+
+const getUser = asyncHandeler(async (req, res) => {
+    res.status(200).json(new apiResponce(200, req.user, "Fetched user Successfully"))
+})
+const updateUserDetails=asyncHandeler(async(req,res)=>{
+    //As per required.......
+})
+export { registerUser, userLogin, logout, regenerateToken, changePassword,getUser }
