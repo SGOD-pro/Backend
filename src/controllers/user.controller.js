@@ -112,7 +112,8 @@ const logout = asyncHandeler(async (req, res) => {
 
     await User.findByIdAndUpdate(user._id,
         {
-            $set: { refreshToken: undefined }
+            // $set: { refreshToken: undefined }
+            $unset: { refreshToken: 1 }  //this removes the field from document
         },
         {
             new: true
@@ -177,7 +178,72 @@ const changePassword = asyncHandeler(async (req, res) => {
 const getUser = asyncHandeler(async (req, res) => {
     res.status(200).json(new apiResponce(200, req.user, "Fetched user Successfully"))
 })
-const updateUserDetails=asyncHandeler(async(req,res)=>{
+const updateUserDetails = asyncHandeler(async (req, res) => {
     //As per required.......
 })
-export { registerUser, userLogin, logout, regenerateToken, changePassword,getUser }
+
+const userChanneleDetails = asyncHandeler(async (req, res) => {
+    const { username } = req.params
+
+    if (!username?.trim()) {
+        new apiErrors(401, "Username is missing.")
+    }
+    const channel = await User.aggregate([
+        {
+            $match: { username: username?.toLowerCase() }
+        },
+        {
+            $lookup: {
+                from: "subscriptions",
+                localField: "_id",
+                foreignField: "channelSubdcribers",
+                as: "mySubscribers"
+            }
+        },
+        {
+            $lookup: {
+                from: "subscriptions",
+                localField: "_id",
+                foreignField: "subscriptions",
+                as: "subscribedTo"
+            }
+        },
+        {
+            $addFields: {
+                mySubscribersCount: {
+                    $size: "$mySubscribers"
+                },
+                subscribedToCount: {
+                    $size: "$subscribedTo"
+                },
+                isSubscribed: {
+                    $cond: {
+                        if: { $in: [req.user?._id, "$subscriptions:subscriptions"] },
+                        then: true,
+                        else: false
+                    }
+                }
+            }
+        },
+        {
+            $project: {
+                fullname: 1,
+                mySubscribersCount: 1,
+                subscribedToCount: 1,
+                isSubscribed: 1,
+                username: 1,
+                avatar: 1,
+                coverImage: 1,
+            }
+        }
+    ])
+
+    if (!channel?.length) {
+        throw new apiErrors(404, "Channel not found.")
+    }
+
+    res.status(200).json(new apiResponce(200, channel[0], "Channel details fetched successfully"));
+})
+
+
+export { registerUser, userLogin, logout, regenerateToken, changePassword, getUser }
