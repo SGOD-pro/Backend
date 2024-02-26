@@ -1,16 +1,12 @@
 import { v2 as cloudinary } from 'cloudinary';
-import { log } from 'console';
 import fs from 'fs'
 
-
-cloudinary.config({
-    cloud_name: process.env.CLOUDINARY_NAME,
-    api_key: process.env.CLOUDINARY_KEY,
-    api_secret: process.env.CLOUDINARY_SECRET
-});
-
 const cloudinaryUpload = async (filePath) => {
-
+    cloudinary.config({
+        cloud_name: process.env.CLOUDINARY_NAME,
+        api_key: process.env.CLOUDINARY_KEY,
+        api_secret: process.env.CLOUDINARY_SECRET
+    });
     try {
         const result = await cloudinary.uploader.upload(filePath, { resource_type: "auto" });
         filePath && fs.unlinkSync(filePath)
@@ -22,6 +18,11 @@ const cloudinaryUpload = async (filePath) => {
 }
 
 const cloudinaryDelete = async (pathLink) => {
+    cloudinary.config({
+        cloud_name: process.env.CLOUDINARY_NAME,
+        api_key: process.env.CLOUDINARY_KEY,
+        api_secret: process.env.CLOUDINARY_SECRET
+    });
     try {
         const regex = /\/([^\/]+)\.jpg$/;
         const match = pathLink.match(regex);

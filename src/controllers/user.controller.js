@@ -1,9 +1,10 @@
 import asyncHandeler from "../utils/asyncHandeler.js";
 import { apiErrors } from "../utils/apiErrors.js";
 import { User } from "../models/user.model.js";
-import { cloudinaryUpload } from "../utils/Cloudinary.js";
+import { cloudinaryDelete, cloudinaryUpload } from "../utils/Cloudinary.js";
 import { apiResponce } from "../utils/apiResponce.js";
 import jwt from 'jsonwebtoken'
+import mongoose from "mongoose";
 const generateTokens = async (userId) => {
     try {
         const user = await User.findById(userId)
@@ -39,6 +40,7 @@ const registerUser = asyncHandeler(async (req, res) => {
     }
 
     //Upload files functionality
+    console.log(req.files);
     const avatarPath = req.files?.avatar[0]?.path
     let coverImagePath;
 
@@ -112,11 +114,11 @@ const logout = asyncHandeler(async (req, res) => {
 
     await User.findByIdAndUpdate(user._id,
         {
-            // $set: { refreshToken: undefined }
-            $unset: { refreshToken: 1 }  //this removes the field from document
+            // $set: { refreshToken: undefined }  //NOTE:It over write the field 
+            $unset: { refreshToken: 1 }  //it removes the field from document
         },
         {
-            new: true
+            new: true  //NOTE:return back the new document after modified the fields
         }
     )
     const options = {
@@ -179,6 +181,36 @@ const getUser = asyncHandeler(async (req, res) => {
     res.status(200).json(new apiResponce(200, req.user, "Fetched user Successfully"))
 })
 const updateUserDetails = asyncHandeler(async (req, res) => {
+    const { email, username, fullname } = req.body
+
+    [email, username, fullname].forEach(element => {
+        if (element === '' || !element) {
+            throw new apiErrors(400, "Some Field is missing")
+        }
+    });
+
+    let userExists = await User.find({
+        $or: [{ username, email }]
+    })
+
+    if (userExists) {
+        userExists.forEach(elem => {
+            if (element.username === username) {
+                throw new apiErrors(401, "Username is already exists..")
+            }
+            if (element.email === email) {
+                throw new apiErrors(401, "Email is already exists..")
+            }
+        })
+    }
+
+    const user = await User.findByIdAndUpdate(req.user?._id,
+        {
+            $set: [{ username, fullname, email }]
+        }, { new: true }
+    ).select("-password -refreshToken")
+
+    res.status(200).json(new apiResponce(200, user, "Updated sucessfully"))
     //As per required.......
 })
 
@@ -196,7 +228,7 @@ const userChanneleDetails = asyncHandeler(async (req, res) => {
             $lookup: {
                 from: "subscriptions",
                 localField: "_id",
-                foreignField: "channelSubdcribers",
+                foreignField: "channel",
                 as: "mySubscribers"
             }
         },
@@ -204,7 +236,7 @@ const userChanneleDetails = asyncHandeler(async (req, res) => {
             $lookup: {
                 from: "subscriptions",
                 localField: "_id",
-                foreignField: "subscriptions",
+                foreignField: "subscriber",
                 as: "subscribedTo"
             }
         },
@@ -245,5 +277,64 @@ const userChanneleDetails = asyncHandeler(async (req, res) => {
     res.status(200).json(new apiResponce(200, channel[0], "Channel details fetched successfully"));
 })
 
+const updateAvatar = asyncHandeler(async (req, res) => {
+    const avatarPath = req.file?.path
+    if (!avatarPath) {
+        throw new apiErrors(400, "Avatar not found.")
+    }
+    const avatar = await cloudinaryUpload(avatarPath)
+    if (!avatar.url) {
+        throw new apiErrors(500, "Error while uploading. Try again later.")
+    }
+    const oldAvatar = req.user.avatar
+    const user = await User.findByIdAndUpdate(req.user._id,
+        {
+            $set: [{ avatar }]
+        }, { new: true }).select("-password -refreshToken")
+    cloudinaryDelete(oldAvatar)
+    res.status(200).json(new apiResponce(200, user, "Avatar updated successfully."))
+})
 
+const watchHistory = asyncHandeler(async (req, res) => {
+    const watchHistory = await User.aggregate([
+        {
+            $match: {
+                _id: new mongoose.Schema.ObjectId(req.user._id) //NOTE: req.user.id is a string and we require mongoose id.
+            },
+            $lookup: {
+                from: 'videos',
+                localField: 'watchHistory',
+                foreignField: '_id',
+                as: 'watchHistory',
+                pipeline: [
+                    {
+                        $lookup: {
+                            from: "users",
+                            localField: 'owner',
+                            foreignField: '_id',
+                            as: 'owner',
+                            pipeline: [{
+                                $project: {
+                                    username: 1,
+                                    fullname: 1,
+                                    avatar: 1,
+                                    coverImage: 1
+                                }
+                            }]
+                        },
+                        $addFields: {
+                            owner: {
+                                $first: "$owner"
+                            }
+                        }
+
+                    }
+
+                ]
+            }
+        }
+    ])
+})
+
+//TODO:build other conrollers, routes, dbModels also..
 export { registerUser, userLogin, logout, regenerateToken, changePassword, getUser }

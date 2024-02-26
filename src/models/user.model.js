@@ -45,7 +45,6 @@ const userSchema = new Schema({
     
 },
     { timestamps: true } //For this we automaticaly get 2 extra fields createAt,updatedAt....
-
 )
 
 

@@ -29,6 +29,7 @@ coverage
 *.html
 *.css
 R.jpeg
+tst.js
 # nyc test coverage
 .nyc_output
 
